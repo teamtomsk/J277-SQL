@@ -1,0 +1,859 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>OCR J277 – Introduction to SQL (Interactive Revision)</title>
+<style>
+  :root{
+    --bg:#0b0f14;
+    --text:#e8eef7;
+    --muted:#a9b7cc;
+    --accent:#27c26a;
+    --accent2:#4adf86;
+    --warn:#ffcc00;
+    --bad:#ff5c77;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    --r:16px;
+    --shadow: 0 10px 30px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:var(--sans); color:var(--text);
+    background:radial-gradient(1200px 800px at 20% 10%, rgba(39,194,106,.18), transparent 60%),
+    radial-gradient(900px 700px at 90% 20%, rgba(74,223,134,.12), transparent 55%),
+    linear-gradient(180deg, #070a0f 0%, #0b0f14 100%);
+    min-height:100vh;
+  }
+  header{
+    position:sticky; top:0; z-index:10;
+    backdrop-filter: blur(10px);
+    background: linear-gradient(180deg, rgba(11,15,20,.92), rgba(11,15,20,.70));
+    border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  .wrap{max-width:1150px; margin:0 auto; padding:18px 18px;}
+  .titleRow{display:flex; gap:14px; align-items:center; justify-content:space-between; flex-wrap:wrap;}
+  .brand{display:flex; gap:12px; align-items:center;}
+  .pill{
+    width:44px; height:44px; border-radius:12px;
+    background:linear-gradient(135deg, rgba(39,194,106,.25), rgba(74,223,134,.08));
+    border:1px solid rgba(255,255,255,.10);
+    box-shadow: var(--shadow);
+    display:grid; place-items:center;
+    font-weight:900; color:var(--accent2);
+  }
+  h1{margin:0; font-size:20px;}
+  .sub{margin:2px 0 0; color:var(--muted); font-size:13px;}
+  .controls{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+  button, .toggle{
+    border:1px solid rgba(255,255,255,.10);
+    background:rgba(255,255,255,.06);
+    color:var(--text);
+    padding:10px 12px;
+    border-radius:12px;
+    cursor:pointer;
+    transition:.15s ease;
+    font-weight:650;
+  }
+  button:hover{transform:translateY(-1px); background:rgba(255,255,255,.08)}
+  button:active{transform:translateY(0px)}
+  .toggle{display:flex; gap:10px; align-items:center;}
+  .toggle input{width:18px; height:18px; accent-color:var(--accent)}
+  main{padding:18px 0 60px;}
+  .grid{display:grid; grid-template-columns: 330px 1fr; gap:16px;}
+  @media (max-width: 980px){ .grid{grid-template-columns:1fr} }
+  nav{
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:var(--r);
+    box-shadow: var(--shadow);
+    padding:14px;
+  }
+  .navTitle{display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px;}
+  .navTitle h2{margin:0; font-size:14px; color:var(--muted); font-weight:800; text-transform:uppercase; letter-spacing:.12em;}
+  .navList{display:flex; flex-direction:column; gap:6px;}
+  .navItem{
+    padding:10px 10px; border-radius:12px; cursor:pointer;
+    border:1px solid rgba(255,255,255,.08);
+    background:rgba(255,255,255,.03);
+    display:flex; align-items:center; gap:10px;
+  }
+  .navItem:hover{background:rgba(255,255,255,.06)}
+  .dot{width:10px; height:10px; border-radius:50%; background:rgba(255,255,255,.25)}
+  .navItem.active .dot{background:var(--accent)}
+  .navItem.active{border-color: rgba(39,194,106,.55); background:rgba(39,194,106,.10)}
+  section.card{
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:var(--r);
+    box-shadow: var(--shadow);
+    padding:18px;
+  }
+  .kicker{
+    display:inline-flex; gap:8px; align-items:center;
+    background:rgba(39,194,106,.12);
+    border:1px solid rgba(39,194,106,.35);
+    color:var(--accent2);
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:900;
+    letter-spacing:.04em;
+    margin-bottom:10px;
+  }
+  h3{margin:8px 0 8px; font-size:20px;}
+  p{color:var(--muted); line-height:1.55; margin:8px 0 10px;}
+  .row{display:flex; gap:12px; flex-wrap:wrap; align-items:flex-start;}
+  .col{flex:1 1 280px;}
+  .panel{
+    background:rgba(0,0,0,.25);
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:14px;
+    padding:14px;
+  }
+  .panel h4{margin:0 0 8px; font-size:14px;}
+  .hint{font-size:13px; color:var(--muted)}
+  .badge{
+    display:inline-block; padding:4px 8px; border-radius:999px;
+    border:1px solid rgba(255,255,255,.10);
+    background:rgba(255,255,255,.05);
+    color:var(--muted);
+    font-size:12px; font-weight:800;
+  }
+  .divider{height:1px; background:rgba(255,255,255,.08); margin:14px 0;}
+  textarea, input[type="text"], select{
+    width:100%;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,.12);
+    background:rgba(255,255,255,.06);
+    color:var(--text);
+    padding:10px 12px;
+    outline:none;
+    font-family:var(--mono);
+    font-size:13px;
+  }
+  textarea{min-height:110px; resize:vertical}
+  .btnRow{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;}
+  .small{font-size:12px; color:var(--muted)}
+  .log{
+    white-space:pre-wrap; font-family:var(--mono);
+    background:#071018;
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:14px;
+    padding:12px;
+    min-height:90px;
+    color:#d7e6ff;
+  }
+  table{
+    width:100%;
+    border-collapse:separate;
+    border-spacing:0;
+    overflow:hidden;
+    border-radius:14px;
+    border:1px solid rgba(255,255,255,.10);
+  }
+  th, td{
+    padding:10px 10px;
+    border-bottom:1px solid rgba(255,255,255,.08);
+    font-size:13px;
+  }
+  th{color:var(--muted); text-align:left; background:rgba(255,255,255,.04); font-weight:900;}
+  tr:last-child td{border-bottom:none;}
+  .teacherOnly{display:none}
+  .teacher .teacherOnly{display:block}
+  .teacher .studentOnly{display:none}
+  details{
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:14px;
+    padding:10px 12px;
+    background:rgba(255,255,255,.03);
+  }
+  summary{cursor:pointer; font-weight:900; color:var(--text)}
+  code.inline{font-family:var(--mono); font-size:12px; background:rgba(255,255,255,.06); padding:2px 6px; border-radius:8px; border:1px solid rgba(255,255,255,.10);}
+  .footer{color:var(--muted); font-size:12px; margin-top:12px}
+  .chips{display:flex; gap:8px; flex-wrap:wrap;}
+  .chip{
+    border:1px solid rgba(255,255,255,.10);
+    background:rgba(255,255,255,.05);
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:12px;
+    cursor:pointer;
+    user-select:none;
+    font-family:var(--mono);
+  }
+  .chip:hover{background:rgba(255,255,255,.08)}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="titleRow">
+      <div class="brand">
+        <div class="pill">SQL</div>
+        <div>
+          <h1>OCR J277 – Introduction to SQL (Interactive Revision)</h1>
+          <div class="sub">Year 11 boost • Focus on the “low pass” essentials • Practice + instant feedback</div>
+        </div>
+      </div>
+      <div class="controls">
+        <label class="toggle" title="Show model answers + teacher notes">
+          <input id="teacherMode" type="checkbox"/>
+          Teacher mode
+        </label>
+        <button id="btnReset" title="Reset progress">Reset</button>
+        <button id="btnPrint" title="Print / save as PDF">Print</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="grid">
+    <nav>
+      <div class="navTitle">
+        <h2>Sections</h2>
+        <span class="badge" id="progressBadge">0/10</span>
+      </div>
+      <div class="navList" id="navList"></div>
+      <div class="divider"></div>
+      <div class="small">
+        Tip: Students can ignore Teacher mode. Use it to reveal answers. <br/>
+        Focus: <span class="badge">SELECT</span> <span class="badge">WHERE</span> <span class="badge">ORDER BY</span> <span class="badge">LIKE</span> <span class="badge">COUNT/SUM/AVG</span>
+      </div>
+    </nav>
+
+    <div id="content"></div>
+  </div>
+
+  <div class="footer">
+    Single offline HTML file • No internet required • Designed for “get the marks” exam practice.
+  </div>
+</main>
+
+<script>
+const DB = {
+  Students: [
+    {StudentID: 101, Name:"Ava",  Year:11, Tutor:"11S", Attendance: 93},
+    {StudentID: 102, Name:"Ben",  Year:11, Tutor:"11S", Attendance: 88},
+    {StudentID: 103, Name:"Cara", Year:11, Tutor:"11T", Attendance: 96},
+    {StudentID: 104, Name:"Dan",  Year:10, Tutor:"10R", Attendance: 91},
+    {StudentID: 105, Name:"Eli",  Year:11, Tutor:"11T", Attendance: 79},
+    {StudentID: 106, Name:"Flo",  Year:10, Tutor:"10R", Attendance: 85},
+  ],
+  Results: [
+    {StudentID:101, Subject:"CS",     AvgScore: 54},
+    {StudentID:101, Subject:"Maths",  AvgScore: 41},
+    {StudentID:101, Subject:"English",AvgScore: 49},
+    {StudentID:102, Subject:"CS",     AvgScore: 38},
+    {StudentID:102, Subject:"Maths",  AvgScore: 36},
+    {StudentID:102, Subject:"English",AvgScore: 44},
+    {StudentID:103, Subject:"CS",     AvgScore: 62},
+    {StudentID:103, Subject:"Maths",  AvgScore: 58},
+    {StudentID:103, Subject:"English",AvgScore: 61},
+    {StudentID:104, Subject:"CS",     AvgScore: 52},
+    {StudentID:105, Subject:"CS",     AvgScore: 29},
+    {StudentID:106, Subject:"CS",     AvgScore: 47},
+  ],
+  LibraryBooks: [
+    {BookID: 1, Title:"Python Basics", Author:"Ng",     Year:2021, Category:"Computing"},
+    {BookID: 2, Title:"SQL in One Day", Author:"Khan",  Year:2019, Category:"Computing"},
+    {BookID: 3, Title:"Macbeth",        Author:"Shakespeare", Year:1606, Category:"English"},
+    {BookID: 4, Title:"The Hobbit",     Author:"Tolkien", Year:1937, Category:"English"},
+    {BookID: 5, Title:"GCSE Maths Pack",Author:"Jones", Year:2020, Category:"Maths"},
+    {BookID: 6, Title:"Data Science",   Author:"Patel", Year:2022, Category:"Computing"},
+  ]
+};
+
+const SECTIONS = [
+  { id:"start", title:"Start here: what is SQL?", icon:"🚀" },
+  { id:"tables", title:"Tables, records, fields", icon:"🧾" },
+  { id:"select", title:"SELECT basics", icon:"✅" },
+  { id:"where", title:"WHERE filters + operators", icon:"🎯" },
+  { id:"like", title:"LIKE + wildcards", icon:"🪄" },
+  { id:"order", title:"ORDER BY sorting", icon:"🔽" },
+  { id:"agg", title:"Aggregates (COUNT, SUM, AVG)", icon:"🧮" },
+  { id:"mixed", title:"Mixed exam practice (5 quick wins)", icon:"🏁" },
+  { id:"mistakes", title:"Common mistakes (easy marks)", icon:"🧯" },
+  { id:"cheat", title:"1‑page cheat sheet", icon:"📌" },
+];
+
+const state = {
+  done: new Set(),
+  teacher:false,
+  current:"start",
+};
+
+function $(sel, root=document){ return root.querySelector(sel); }
+function el(tag, attrs={}, ...children){
+  const n = document.createElement(tag);
+  Object.entries(attrs).forEach(([k,v])=>{
+    if(k==="class") n.className=v;
+    else if(k==="html") n.innerHTML=v;
+    else if(k.startsWith("on") && typeof v==="function") n.addEventListener(k.slice(2), v);
+    else n.setAttribute(k,v);
+  });
+  for(const c of children){
+    if(c==null) continue;
+    n.appendChild(typeof c==="string" ? document.createTextNode(c) : c);
+  }
+  return n;
+}
+function sectionShell(kicker, title, body){
+  return el("section",{class:"card"},
+    el("div",{class:"kicker"}, kicker),
+    el("h3",{}, title),
+    body
+  );
+}
+function setDone(id){ state.done.add(id); updateProgress(); }
+function updateProgress(){ $("#progressBadge").textContent = `${state.done.size}/${SECTIONS.length}`; }
+function renderNav(){
+  const nav = $("#navList");
+  nav.innerHTML="";
+  SECTIONS.forEach(s=>{
+    nav.appendChild(el("div",{class:"navItem"+(state.current===s.id?" active":""), onclick:()=>go(s.id)},
+      el("div",{class:"dot"}), el("div",{}, `${s.icon} ${s.title}`)
+    ));
+  });
+}
+function go(id){
+  state.current=id;
+  renderNav();
+  renderSection();
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+function normalize(sql){
+  return sql.trim().replace(/\s+/g," ").replace(/;$/,"");
+}
+function isQuoted(s){ return (s.startsWith("'") && s.endsWith("'")) || (s.startsWith('"') && s.endsWith('"')); }
+function unquote(s){ return s.slice(1,-1); }
+
+function parseSelect(sql){
+  const s = normalize(sql);
+  const up = s.toUpperCase();
+  if(!up.startsWith("SELECT ")) throw new Error("SQL must start with SELECT");
+  const fromIdx = up.indexOf(" FROM ");
+  if(fromIdx === -1) throw new Error("Missing FROM");
+  const selectPart = s.slice(7, fromIdx).trim();
+  let rest = s.slice(fromIdx + 6).trim();
+  const parts = rest.split(" ");
+  const table = parts[0].trim();
+  rest = rest.slice(table.length).trim();
+  let wherePart = null;
+  let orderPart = null;
+  const upRest = rest.toUpperCase();
+  const whereIdx = upRest.indexOf("WHERE ");
+  const orderIdx = upRest.indexOf("ORDER BY ");
+  if(whereIdx !== -1 && orderIdx !== -1){
+    if(whereIdx < orderIdx){
+      wherePart = rest.slice(whereIdx + 6, orderIdx).trim();
+      orderPart = rest.slice(orderIdx + 9).trim();
+    } else {
+      orderPart = rest.slice(orderIdx + 9, whereIdx).trim();
+      wherePart = rest.slice(whereIdx + 6).trim();
+    }
+  } else if(whereIdx !== -1){
+    wherePart = rest.slice(whereIdx + 6).trim();
+  } else if(orderIdx !== -1){
+    orderPart = rest.slice(orderIdx + 9).trim();
+  }
+  return { selectPart, table, wherePart, orderPart };
+}
+function splitCommaList(s){ return s.split(",").map(x=>x.trim()).filter(Boolean); }
+function parseOrder(orderPart){
+  if(!orderPart) return null;
+  const bits = orderPart.split(" ").filter(Boolean);
+  const col = bits[0];
+  const dir = (bits[1] || "ASC").toUpperCase();
+  return { col, dir: (dir==="DESC"?"DESC":"ASC") };
+}
+function likeMatch(value, pattern){
+  const esc = pattern.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const re = new RegExp("^" + esc.replace(/%/g,".*") + "$", "i");
+  return re.test(String(value));
+}
+function parseValue(tok){
+  if(isQuoted(tok)) return unquote(tok);
+  if(/^-?\d+(\.\d+)?$/.test(tok)) return Number(tok);
+  return tok;
+}
+function evalCondition(row, cond){
+  const likeIdx = cond.toUpperCase().indexOf(" LIKE ");
+  if(likeIdx !== -1){
+    const col = cond.slice(0, likeIdx).trim();
+    const rhs = cond.slice(likeIdx + 6).trim();
+    const val = parseValue(rhs);
+    return likeMatch(row[col], String(val));
+  }
+  const ops = ["<=", ">=", "!=", "=", "<", ">"];
+  for(const op of ops){
+    const idx = cond.indexOf(" " + op + " ");
+    if(idx !== -1){
+      const col = cond.slice(0, idx).trim();
+      const rhs = cond.slice(idx + op.length + 2).trim();
+      const v = parseValue(rhs);
+      const a = row[col];
+      if(op==="=") return a == v;
+      if(op==="!=") return a != v;
+      if(op==="<") return Number(a) < Number(v);
+      if(op===">") return Number(a) > Number(v);
+      if(op==="<=") return Number(a) <= Number(v);
+      if(op===">=") return Number(a) >= Number(v);
+    }
+  }
+  throw new Error("Could not parse WHERE condition: " + cond);
+}
+function evalWhere(rows, wherePart){
+  if(!wherePart) return rows;
+  const orChunks = wherePart.split(/\s+OR\s+/i).map(s=>s.trim()).filter(Boolean);
+  return rows.filter(row=>{
+    for(const chunk of orChunks){
+      const andParts = chunk.split(/\s+AND\s+/i).map(s=>s.trim()).filter(Boolean);
+      let ok = true;
+      for(const cond of andParts){
+        if(!evalCondition(row, cond)){ ok=false; break; }
+      }
+      if(ok) return true;
+    }
+    return false;
+  });
+}
+function aggregate(rows, expr){
+  const u = expr.toUpperCase();
+  if(u==="COUNT(*)") return rows.length;
+  const m = expr.match(/^(COUNT|SUM|AVG|MIN|MAX)\(([^)]+)\)$/i);
+  if(!m) return null;
+  const fn = m[1].toUpperCase();
+  const col = m[2].trim();
+  const nums = rows.map(r=>Number(r[col])).filter(x=>!Number.isNaN(x));
+  if(fn==="COUNT") return rows.filter(r=>r[col]!==undefined && r[col]!==null).length;
+  if(fn==="SUM") return nums.reduce((a,b)=>a+b,0);
+  if(fn==="AVG") return nums.length? (nums.reduce((a,b)=>a+b,0)/nums.length): 0;
+  if(fn==="MIN") return nums.length? Math.min(...nums): null;
+  if(fn==="MAX") return nums.length? Math.max(...nums): null;
+  return null;
+}
+function runSQL(sql){
+  const {selectPart, table, wherePart, orderPart} = parseSelect(sql);
+  const rows0 = DB[table];
+  if(!rows0) throw new Error("Unknown table: " + table);
+  let rows = rows0.map(r=>({...r}));
+  rows = evalWhere(rows, wherePart);
+  const order = parseOrder(orderPart);
+  if(order){
+    rows.sort((a,b)=>{
+      const x=a[order.col], y=b[order.col];
+      if(x==y) return 0;
+      if(order.dir==="ASC") return (x>y?1:-1);
+      return (x<y?1:-1);
+    });
+  }
+  const selectList = selectPart.trim();
+  if(selectList === "*"){
+    const cols = Object.keys(rows0[0] || {});
+    return { columns: cols, rows: rows.map(r=>cols.map(c=>r[c])) };
+  }
+  const cols = splitCommaList(selectList);
+  const aggResults = cols.map(c=>aggregate(rows, c));
+  const allAgg = aggResults.every(v=>v !== null);
+  if(allAgg){
+    return { columns: cols, rows: [aggResults] };
+  }
+  return { columns: cols, rows: rows.map(r=>cols.map(c=>r[c])) };
+}
+function renderResult(host, result){
+  host.innerHTML="";
+  const tbl = el("table",{});
+  const thead = el("thead",{}, el("tr",{}, ...result.columns.map(c=>el("th",{}, c))));
+  const tbody = el("tbody",{});
+  const maxRows = 20;
+  const rows = result.rows.slice(0, maxRows);
+  rows.forEach(row=>{
+    tbody.appendChild(el("tr",{}, ...row.map(v=>el("td",{}, v===undefined? "NULL" : String(v)))));
+  });
+  if(result.rows.length > maxRows){
+    tbody.appendChild(el("tr",{}, el("td",{colspan:String(result.columns.length)}, `… ${result.rows.length-maxRows} more row(s) not shown`)));
+  }
+  tbl.appendChild(thead); tbl.appendChild(tbody);
+  host.appendChild(tbl);
+}
+
+function renderStart(){
+  const body = el("div",{},
+    el("p",{}, "SQL is the language used to ", el("b",{},"query"), " (ask questions) about data stored in a database."),
+    el("p",{}, "For OCR J277, the most important skill is being able to write a correct ",
+      el("span",{class:"badge"},"SELECT ... FROM ..."), " query, then add a ",
+      el("span",{class:"badge"},"WHERE"), " filter and ",
+      el("span",{class:"badge"},"ORDER BY"), " sorting."
+    ),
+    el("div",{class:"row"},
+      el("div",{class:"col panel"},
+        el("h4",{},"Try your first query"),
+        el("p",{class:"hint"},"Press Run. Then try changing the table name to Students or LibraryBooks."),
+        el("textarea",{id:"sqlBox0"}, "SELECT * FROM Students;"),
+        el("div",{class:"btnRow"},
+          el("button",{onclick:()=>runAndShow("sqlBox0","out0","msg0")},"Run"),
+          el("button",{onclick:()=>{ $('#sqlBox0').value='SELECT * FROM LibraryBooks;'; }},"Load example")
+        ),
+        el("div",{class:"log", id:"msg0"},"Tip: SQL is not Python. It doesn’t use brackets for indexing.")
+      ),
+      el("div",{class:"col panel"},
+        el("h4",{},"Results"),
+        el("div",{id:"out0"})
+      )
+    ),
+    el("div",{class:"btnRow"},
+      el("button",{onclick:()=>{ setDone('start'); alert('Done ✅'); }},"Mark as done")
+    )
+  );
+  return sectionShell("Start", "What is SQL?", body);
+}
+function renderTables(){
+  const body = el("div",{},
+    el("p",{}, "A database table is like a spreadsheet:"),
+    el("div",{class:"chips"},
+      chip("Table", "A set of data about one thing (e.g. Students)."),
+      chip("Record", "A row (one student)."),
+      chip("Field", "A column (e.g. Name)."),
+      chip("Primary Key", "A unique ID for each record (e.g. StudentID).")
+    ),
+    el("p",{}, "Quick check: In the Students table, what is the primary key field?"),
+    el("div",{class:"row"},
+      el("div",{class:"col panel"},
+        el("div",{class:"btnRow"},
+          el("button",{onclick:()=>markMC('mc1','StudentID')},"StudentID"),
+          el("button",{onclick:()=>markMC('mc1','Name')},"Name"),
+          el("button",{onclick:()=>markMC('mc1','Tutor')},"Tutor")
+        ),
+        el("div",{class:"log", id:"mc1"},"Choose one…")
+      ),
+      el("div",{class:"col panel"},
+        el("h4",{},"Peek at Students"),
+        el("div",{id:"outT"})
+      )
+    ),
+    el("div",{class:"btnRow"},
+      el("button",{onclick:()=>{ setDone('tables'); alert('Done ✅'); }},"Mark as done")
+    )
+  );
+  setTimeout(()=>{
+    try{ renderResult($("#outT"), runSQL("SELECT * FROM Students;")); }catch(e){}
+  },0);
+  return sectionShell("Basics", "Tables, records, fields (easy marks)", body);
+}
+function renderSelect(){
+  const body = el("div",{},
+    el("p",{}, "SELECT chooses what columns you want to see."),
+    el("p",{}, "Pattern: ", el("code",{class:"inline"},"SELECT column1, column2 FROM Table;")),
+    el("div",{class:"row"},
+      el("div",{class:"col panel"},
+        el("h4",{},"Build it (guided)"),
+        el("label",{class:"small"},"Table"),
+        (function(){
+          const sel = el("select",{id:"selTable"},
+            el("option",{value:"Students"},"Students"),
+            el("option",{value:"LibraryBooks"},"LibraryBooks"),
+            el("option",{value:"Results"},"Results")
+          );
+          sel.addEventListener("change", ()=>updateColumnPicker());
+          return sel;
+        })(),
+        el("div",{style:"height:8px"}),
+        el("label",{class:"small"},"Columns (comma separated)"),
+        el("input",{id:"selCols", type:"text", value:"StudentID, Name"}),
+        el("div",{class:"btnRow"},
+          el("button",{onclick:()=>runSelectBuilder()},"Run"),
+          el("button",{onclick:()=>{ $('#selCols').value='*'; runSelectBuilder(); }},"Show *")
+        ),
+        el("div",{class:"log", id:"selMsg"},"Try selecting Name and Attendance.")
+      ),
+      el("div",{class:"col panel"},
+        el("h4",{},"Results"),
+        el("div",{id:"selOut"})
+      )
+    ),
+    el("div",{class:"btnRow"},
+      el("button",{onclick:()=>{ setDone('select'); alert('Done ✅'); }},"Mark as done")
+    )
+  );
+  setTimeout(()=>{ updateColumnPicker(); },0);
+  return sectionShell("SELECT", "Selecting columns", body);
+}
+function renderWhere(){
+  const body = el("div",{},
+    el("p",{}, "WHERE filters rows. Think: “only show records that match a rule”."),
+    el("p",{}, "Operators: ", el("span",{class:"badge"},"="), " ", el("span",{class:"badge"},"<"), " ", el("span",{class:"badge"},">"), " ", el("span",{class:"badge"},"AND"), " ", el("span",{class:"badge"},"OR")),
+    el("div",{class:"row"},
+      el("div",{class:"col panel"},
+        el("h4",{},"Try filters"),
+        el("textarea",{id:"sqlBoxW"}, "SELECT Name, Attendance FROM Students WHERE Year = 11;"),
+        el("div",{class:"btnRow"},
+          el("button",{onclick:()=>runAndShow("sqlBoxW","outW","msgW")},"Run"),
+          el("button",{onclick:()=>{ $('#sqlBoxW').value='SELECT Name, Attendance FROM Students WHERE Attendance >= 90;'; }},"Load example"),
+          el("button",{onclick:()=>{ $('#sqlBoxW').value='SELECT Name, Tutor FROM Students WHERE Year = 11 AND Tutor = "11T";'; }},"AND example")
+        ),
+        el("div",{class:"log", id:"msgW"},"Remember: strings need quotes, e.g. Tutor = '11T'")
+      ),
+      el("div",{class:"col panel"},
+        el("h4",{},"Results"),
+        el("div",{id:"outW"})
+      )
+    ),
+    el("div",{class:"btnRow"},
+      el("button",{onclick:()=>{ setDone('where'); alert('Done ✅'); }},"Mark as done")
+    )
+  );
+  return sectionShell("WHERE", "Filtering with conditions", body);
+}
+function renderLike(){
+  const body = el("div",{},
+    el("p",{}, "LIKE matches patterns in text. Use ", el("span",{class:"badge"},"%"), " as a wildcard meaning “any characters”."),
+    el("p",{}, "Examples: ", el("code",{class:"inline"},"Name LIKE 'A%'"), " starts with A. ", el("code",{class:"inline"},"Title LIKE '%SQL%'"), " contains SQL."),
+    el("div",{class:"row"},
+      el("div",{class:"col panel"},
+        el("h4",{},"Try LIKE"),
+        el("textarea",{id:"sqlBoxL"}, "SELECT Title, Author FROM LibraryBooks WHERE Title LIKE '%SQL%';"),
+        el("div",{class:"btnRow"},
+          el("button",{onclick:()=>runAndShow("sqlBoxL","outL","msgL")},"Run"),
+          el("button",{onclick:()=>{ $('#sqlBoxL').value="SELECT Name FROM Students WHERE Name LIKE 'A%';"; }},"Starts with A"),
+          el("button",{onclick:()=>{ $('#sqlBoxL').value="SELECT Title FROM LibraryBooks WHERE Author LIKE '%son%';"; }},"Contains 'son'")
+        ),
+        el("div",{class:"log", id:"msgL"},"Wildcard % = any number of characters")
+      ),
+      el("div",{class:"col panel"},
+        el("h4",{},"Results"),
+        el("div",{id:"outL"})
+      )
+    ),
+    el("div",{class:"btnRow"},
+      el("button",{onclick:()=>{ setDone('like'); alert('Done ✅'); }},"Mark as done")
+    )
+  );
+  return sectionShell("LIKE", "Text matching with wildcards", body);
+}
+function renderOrder(){
+  const body = el("div",{},
+    el("p",{}, "ORDER BY sorts results. Default is ASC. Use DESC for reverse."),
+    el("div",{class:"row"},
+      el("div",{class:"col panel"},
+        el("h4",{},"Try sorting"),
+        el("textarea",{id:"sqlBoxO"}, "SELECT Name, Attendance FROM Students ORDER BY Attendance DESC;"),
+        el("div",{class:"btnRow"},
+          el("button",{onclick:()=>runAndShow("sqlBoxO","outO","msgO")},"Run"),
+          el("button",{onclick:()=>{ $('#sqlBoxO').value='SELECT Title, Year FROM LibraryBooks ORDER BY Year ASC;'; }},"Oldest → newest"),
+          el("button",{onclick:()=>{ $('#sqlBoxO').value='SELECT Title, Year FROM LibraryBooks ORDER BY Year DESC;'; }},"Newest → oldest")
+        ),
+        el("div",{class:"log", id:"msgO"},"Tip: ORDER BY goes at the end.")
+      ),
+      el("div",{class:"col panel"},
+        el("h4",{},"Results"),
+        el("div",{id:"outO"})
+      )
+    ),
+    el("div",{class:"btnRow"},
+      el("button",{onclick:()=>{ setDone('order'); alert('Done ✅'); }},"Mark as done")
+    )
+  );
+  return sectionShell("ORDER BY", "Sorting results", body);
+}
+function renderAgg(){
+  const body = el("div",{},
+    el("p",{}, "Aggregates give one answer from many rows. Easy marks."),
+    el("div",{class:"chips"},
+      chip("COUNT(*)","How many rows matched?"),
+      chip("SUM(col)","Total of a numeric column"),
+      chip("AVG(col)","Average of a numeric column"),
+      chip("MIN(col)","Smallest value"),
+      chip("MAX(col)","Largest value")
+    ),
+    el("div",{class:"row"},
+      el("div",{class:"col panel"},
+        el("h4",{},"Try aggregates"),
+        el("textarea",{id:"sqlBoxA"}, "SELECT COUNT(*) FROM Students WHERE Year = 11;"),
+        el("div",{class:"btnRow"},
+          el("button",{onclick:()=>runAndShow("sqlBoxA","outA","msgA")},"Run"),
+          el("button",{onclick:()=>{ $('#sqlBoxA').value='SELECT AVG(Attendance) FROM Students WHERE Year = 11;'; }},"Average attendance"),
+          el("button",{onclick:()=>{ $('#sqlBoxA').value='SELECT MAX(AvgScore) FROM Results WHERE Subject = "CS";'; }},"Best CS score")
+        ),
+        el("div",{class:"log", id:"msgA"},"Aggregates return a single row.")
+      ),
+      el("div",{class:"col panel"},
+        el("h4",{},"Results"),
+        el("div",{id:"outA"})
+      )
+    ),
+    el("div",{class:"btnRow"},
+      el("button",{onclick:()=>{ setDone('agg'); alert('Done ✅'); }},"Mark as done")
+    )
+  );
+  return sectionShell("Aggregates", "COUNT, SUM, AVG, MIN, MAX", body);
+}
+function renderMixed(){
+  const tasks = [
+    { id:"q1", prompt:"Show all Year 11 students' names.", answer:"SELECT Name FROM Students WHERE Year = 11;" },
+    { id:"q2", prompt:"Show Name and Attendance for students with Attendance < 90.", answer:"SELECT Name, Attendance FROM Students WHERE Attendance < 90;" },
+    { id:"q3", prompt:"Show all Computing books (Title, Author).", answer:"SELECT Title, Author FROM LibraryBooks WHERE Category = 'Computing';" },
+    { id:"q4", prompt:"How many Year 11 students are in Tutor '11T'?", answer:"SELECT COUNT(*) FROM Students WHERE Year = 11 AND Tutor = '11T';" },
+    { id:"q5", prompt:"Show Students sorted by Attendance highest first (Name, Attendance).", answer:"SELECT Name, Attendance FROM Students ORDER BY Attendance DESC;" },
+  ];
+  const body = el("div",{},
+    el("p",{}, "Five quick-win exam-style tasks. Type SQL and click Check."),
+    ...tasks.map(t=>practiceBlock(t)),
+    el("div",{class:"btnRow"},
+      el("button",{onclick:()=>{ setDone('mixed'); alert('Done ✅'); }},"Mark as done")
+    )
+  );
+  return sectionShell("Practice", "Mixed exam practice (quick wins)", body);
+}
+function renderMistakes(){
+  const body = el("div",{},
+    el("p",{}, "Common reasons students lose easy marks:"),
+    el("div",{class:"panel"},
+      el("ul",{style:"margin:0; color:var(--muted); line-height:1.6; padding-left:18px"},
+        el("li",{}, "Forgetting quotes around text: Tutor = '11T'"),
+        el("li",{}, "Writing WHERE after ORDER BY (wrong order)"),
+        el("li",{}, "Using Python-style equals (==) instead of SQL (=)"),
+        el("li",{}, "Forgetting the comma between selected columns"),
+        el("li",{}, "Mixing up LIKE wildcards: use % not *")
+      )
+    ),
+    el("p",{}, "Mini-fix: what’s wrong with this query?"),
+    el("div",{class:"panel"},
+      el("div",{class:"log"},"SELECT Name Attendance FROM Students WHERE Tutor = 11T ORDER BY;"),
+      el("div",{class:"btnRow"},
+        el("button",{onclick:()=>mistakeAnswer('m','commas')},"Missing comma"),
+        el("button",{onclick:()=>mistakeAnswer('m','quotes')},"Missing quotes"),
+        el("button",{onclick:()=>mistakeAnswer('m','orderby')},"Broken ORDER BY"),
+        el("button",{onclick:()=>mistakeAnswer('m','all')},"All of the above")
+      ),
+      el("div",{class:"log", id:"m"},"Choose…")
+    ),
+    el("div",{class:"btnRow"},
+      el("button",{onclick:()=>{ setDone('mistakes'); alert('Done ✅'); }},"Mark as done")
+    )
+  );
+  return sectionShell("Avoidable losses", "Common mistakes (easy marks)", body);
+}
+function renderCheat(){
+  const body = el("div",{},
+    el("p",{}, "This is the “if you remember nothing else” sheet."),
+    el("div",{class:"panel"},
+      el("div",{class:"log"}, [
+        "SQL order (memorise this):",
+        "  SELECT columns",
+        "  FROM table",
+        "  WHERE condition",
+        "  ORDER BY column ASC/DESC",
+        "",
+        "Examples:",
+        "  SELECT * FROM Students;",
+        "  SELECT Name, Attendance FROM Students WHERE Year = 11;",
+        "  SELECT Title FROM LibraryBooks WHERE Title LIKE '%SQL%';",
+        "  SELECT COUNT(*) FROM Students WHERE Tutor = '11T';",
+        "",
+        "Operators:",
+        "  =  !=  <  >  <=  >=",
+        "  AND / OR",
+        "  LIKE 'A%'  (starts with A)",
+        "  LIKE '%SQL%' (contains SQL)"
+      ].join("\n"))
+    ),
+    el("div",{class:"btnRow"},
+      el("button",{onclick:()=>window.print()},"Print this page"),
+      el("button",{onclick:()=>{ setDone('cheat'); alert('Done ✅'); }},"Mark as done")
+    )
+  );
+  return sectionShell("Cheat sheet", "1‑page SQL essentials", body);
+}
+
+function chip(title, text){
+  return el("div",{class:"chip", onclick:()=>alert(title + ":\n\n" + text)}, title);
+}
+function markMC(outId, correct){
+  const out = $("#"+outId);
+  const chosen = event.target.textContent.trim();
+  out.textContent = (chosen === correct) ? ("✅ Correct: " + correct) : "❌ Not quite. Try again.";
+}
+function mistakeAnswer(outId, choice){
+  const out = $("#"+outId);
+  if(choice==="all"){
+    out.textContent = "✅ Yes. Missing comma (Name, Attendance), missing quotes ('11T'), and ORDER BY needs a column and direction.";
+  } else {
+    out.textContent = "⚠️ That IS a problem… but there’s more wrong too. Try again.";
+  }
+}
+function updateColumnPicker(){
+  const table = $("#selTable").value;
+  const first = DB[table][0];
+  const cols = Object.keys(first || {});
+  $("#selCols").value = cols.slice(0,2).join(", ");
+}
+function runSelectBuilder(){
+  const t = $("#selTable").value;
+  const c = $("#selCols").value.trim() || "*";
+  const sql = `SELECT ${c} FROM ${t};`;
+  $("#selMsg").textContent = sql;
+  try{ renderResult($("#selOut"), runSQL(sql)); }
+  catch(e){ $("#selMsg").textContent = "❌ " + e.message; $("#selOut").innerHTML=""; }
+}
+function runAndShow(inputId, outId, msgId){
+  const sql = $("#"+inputId).value;
+  const msg = $("#"+msgId);
+  const out = $("#"+outId);
+  try{ msg.textContent="✅ Ran OK"; renderResult(out, runSQL(sql)); }
+  catch(e){ msg.textContent="❌ " + e.message; out.innerHTML=""; }
+}
+function normalizeLoose(s){ return s.trim().replace(/\s+/g," ").replace(/;$/,"").toUpperCase(); }
+function practiceBlock(t){
+  const taId="ta_"+t.id, msgId="msg_"+t.id, outId="out_"+t.id;
+  return el("div",{class:"panel"},
+    el("h4",{}, t.id.toUpperCase()+". "+t.prompt),
+    el("textarea",{id:taId, placeholder:"Type SQL here…"}),
+    el("div",{class:"btnRow"},
+      el("button",{onclick:()=>checkTask(taId, msgId, outId, t.answer)},"Check"),
+      el("button",{onclick:()=>runAndShow(taId, outId, msgId)},"Run"),
+      el("button",{class:"teacherOnly", onclick:()=>{ $("#"+taId).value=t.answer; }},"Fill answer")
+    ),
+    el("div",{class:"log", id:msgId},"Tip: Start with SELECT ... FROM ..."),
+    el("div",{id:outId})
+  );
+}
+function checkTask(taId, msgId, outId, answer){
+  const user=$("#"+taId).value, msg=$("#"+msgId), out=$("#"+outId);
+  try{
+    const rUser=runSQL(user), rAns=runSQL(answer);
+    const sameCols = normalizeLoose(rUser.columns.join(","))===normalizeLoose(rAns.columns.join(","));
+    const sameRows = JSON.stringify(rUser.rows)===JSON.stringify(rAns.rows);
+    if(sameCols && sameRows){ msg.textContent="✅ Correct! (matches expected output)"; }
+    else { msg.textContent="⚠️ Not quite. Your query ran, but output doesn't match the task."; }
+    renderResult(out, rUser);
+  }catch(e){ msg.textContent="❌ "+e.message; out.innerHTML=""; }
+}
+
+function renderSection(){
+  const host=$("#content"); host.innerHTML="";
+  const map={
+    start:renderStart, tables:renderTables, select:renderSelect, where:renderWhere,
+    like:renderLike, order:renderOrder, agg:renderAgg, mixed:renderMixed,
+    mistakes:renderMistakes, cheat:renderCheat
+  };
+  host.appendChild(map[state.current]());
+  document.body.classList.toggle("teacher", state.teacher);
+}
+function resetAll(){
+  state.done=new Set(); state.current="start";
+  updateProgress(); renderNav(); renderSection();
+}
+function init(){
+  renderNav(); renderSection(); updateProgress();
+  $("#teacherMode").addEventListener("change",(e)=>{ state.teacher=e.target.checked; document.body.classList.toggle("teacher", state.teacher); });
+  $("#btnReset").addEventListener("click",()=>{ if(confirm("Reset progress?")) resetAll(); });
+  $("#btnPrint").addEventListener("click",()=>window.print());
+}
+init();
+</script>
+</body>
+</html>
